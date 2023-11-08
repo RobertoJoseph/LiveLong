@@ -5,11 +5,12 @@ import code.structure.State;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
 
 public class Problem {
 
 
-    public Map<Attribute, Integer> variables;
+    public HashMap<Attribute, Integer> variables;
 
     // Constructor
     public Problem(String input) {
@@ -53,12 +54,13 @@ public class Problem {
         variables.put(Attribute.MATERIALS_USE_BUILD2, Integer.parseInt(build2[2]));
         variables.put(Attribute.ENERGY_USE_BUILD2, Integer.parseInt(build2[3]));
         variables.put(Attribute.PROSPERITY_BUILD2, Integer.parseInt(build2[4]));
+
     }
 
     public State getInitialState() {
         return new State(variables.get(Attribute.INITIAL_PROSPERITY),
             variables.get(Attribute.INITIAL_FOOD),
             variables.get(Attribute.INITIAL_MATERIALS),
-            variables.get(Attribute.INITIAL_ENERGY), 0);
+            variables.get(Attribute.INITIAL_ENERGY), 0,0);
     }
 }

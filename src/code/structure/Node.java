@@ -7,13 +7,15 @@ public class Node {
     private Node parent;
     private int pathCost;
     private final Action action;
+    private int depth;
 
 
-    public Node(State state, Node parent, int pathCost,Action action) {
+    public Node(State state, Node parent, int pathCost,Action action,int depth) {
         this.state = state;
         this.parent = parent;
         this.pathCost = pathCost;
         this.action = action;
+        this.depth = depth;
     }
 
     // Getters and setters for the attributes
@@ -31,6 +33,14 @@ public class Node {
 
     public void setParent(Node parent) {
         this.parent = parent;
+    }
+
+    public int getDepth(){
+        return depth;
+    }
+
+    public void setDepth(int depth){
+        this.depth = depth;
     }
 
 
