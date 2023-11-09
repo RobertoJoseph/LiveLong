@@ -89,17 +89,17 @@ public class State {
     }
 
     private State getState(int delayTime,RequestState requestState) {
-        int newFood = Math.max(0, food - 1);
-        int newMaterials = Math.max(0, materials - 1);
-        int newEnergy = Math.max(0, energy - 1);
+        int newFood =  food - 1;
+        int newMaterials =  materials - 1;
+        int newEnergy =  energy - 1;
         int newMoneySpent = moneySpent + LLAPSearch.UNIT_PRICE_FOOD + LLAPSearch.UNIT_PRICE_ENERGY + LLAPSearch.UNIT_PRICE_MATERIALS;
         return new State(prosperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime,requestState);
     }
 
     public State doWait() {
-        int newFood = Math.max(0, food - 1);
-        int newMaterials = Math.max(0, materials - 1);
-        int newEnergy = Math.max(0, energy - 1);
+        int newFood = food - 1;
+        int newMaterials =  materials - 1;
+        int newEnergy =  energy - 1;
         int newMoneySpent = moneySpent + LLAPSearch.UNIT_PRICE_FOOD + LLAPSearch.UNIT_PRICE_ENERGY + LLAPSearch.UNIT_PRICE_MATERIALS;
         return new State(prosperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime,requestState);
     }
@@ -111,9 +111,9 @@ public class State {
         int givenPrice = (numOfBuild == 1) ? variables.get(Attribute.PRICE_BUILD1) : variables.get(Attribute.PRICE_BUILD2);
         int givenProsperity = (numOfBuild == 1) ? variables.get(Attribute.PROSPERITY_BUILD1) : variables.get(Attribute.PROSPERITY_BUILD2);
 
-        int newFood = Math.max(0, food - givenFood);
-        int newMaterials = Math.max(0, materials - givenMaterials);
-        int newEnergy = Math.max(0, energy - givenEnergy);
+        int newFood = food - givenFood;
+        int newMaterials =  materials - givenMaterials;
+        int newEnergy = energy - givenEnergy;
         int newMoneySpent = moneySpent + givenPrice + LLAPSearch.UNIT_PRICE_FOOD * givenFood + LLAPSearch.UNIT_PRICE_ENERGY * givenEnergy + LLAPSearch.UNIT_PRICE_MATERIALS * givenMaterials;
         int newProsperity = prosperity + givenProsperity;
         return new State(newProsperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime,requestState);

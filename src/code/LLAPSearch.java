@@ -133,19 +133,21 @@ public class LLAPSearch extends GenericSearch {
             generateDefaultStateSuccessors(node, successors);
             generateBuildSuccessors(node, successors);
         } else {
+
             if (node.getState().getDelayTime() == 0) {
-                State currentState = node.getState();
+                State currentState =  new State(node.getState().getProsperity(),node.getState().getFood(),node.getState().getMaterials(),node.getState().getEnergy(),node.getState().getMoneySpent(),node.getState().getDelayTime(),RequestState.DEFAULT);
                 State newState = currentState.resourceDelivered(node.getState().getRequestState(), problem.variables);
                 successors.add(new Node(newState.doWait(), node, node.getState().getMoneySpent(), Action.WAIT, node.getDepth() + 1));
                 generateBuildWithNewState(node, successors, newState);
 
             } else {
-                State newState = node.getState();
+                State newState =new State(node.getState().getProsperity(),node.getState().getFood(),node.getState().getMaterials(),node.getState().getEnergy(),node.getState().getMoneySpent(),node.getState().getDelayTime(),node.getState().getRequestState());
                 newState.setDelayTime(newState.getDelayTime() - 1);
                 successors.add(new Node(newState.doWait(), node, node.getState().getMoneySpent(), Action.WAIT, node.getDepth() + 1));
                 generateBuildWithNewState(node, successors, newState);
 
             }
+
         }
         return successors;
     }
@@ -153,18 +155,15 @@ public class LLAPSearch extends GenericSearch {
     private static void generateDefaultStateSuccessors(Node node, List<Node> successors) {
 
         // For RequestFood
-        State newStateRequestFood = node.getState();
-        newStateRequestFood.setRequestState(RequestState.FOOD);
+        State newStateRequestFood = new State(node.getState().getProsperity(),node.getState().getFood(),node.getState().getMaterials(),node.getState().getEnergy(),node.getState().getMoneySpent(),node.getState().getDelayTime(),RequestState.FOOD);
         successors.add(new Node(newStateRequestFood.requestFood(problem.variables.get(Attribute.DELAY_REQUEST_FOOD)), node, node.getState().getMoneySpent(), Action.RequestFood, node.getDepth() + 1));
 
         // For RequestEnergy
-        State newStateRequestEnergy =node.getState();
-        newStateRequestEnergy.setRequestState(RequestState.ENERGY);
+        State newStateRequestEnergy =new State(node.getState().getProsperity(), node.getState().getFood(), node.getState().getMaterials(), node.getState().getEnergy(), node.getState().getMoneySpent(), node.getState().getDelayTime(), RequestState.ENERGY);
         successors.add(new Node(newStateRequestEnergy.requestEnergy(problem.variables.get(Attribute.DELAY_REQUEST_ENERGY)), node, node.getState().getMoneySpent(), Action.RequestEnergy, node.getDepth() + 1));
 
         // For RequestMaterials
-        State newStateRequestMaterials = node.getState();
-        newStateRequestMaterials.setRequestState(RequestState.MATERIALS);
+        State newStateRequestMaterials = new State(node.getState().getProsperity(), node.getState().getFood(), node.getState().getMaterials(), node.getState().getEnergy(), node.getState().getMoneySpent(), node.getState().getDelayTime(), RequestState.MATERIALS);
         successors.add(new Node(newStateRequestMaterials.requestMaterials(problem.variables.get(Attribute.DELAY_REQUEST_MATERIALS)), node, node.getState().getMoneySpent(), Action.RequestMaterials, node.getDepth() + 1));
     }
 

@@ -232,13 +232,14 @@ public class LLAPPlanChecker {
     public boolean tryPlan(String[] actions, LLAPPlanChecker s) {
         boolean linkin = false;
         System.out.println("Actions" + Arrays.toString(actions));
-        for (int i = 0; i < actions.length; i++) {
 
+        for (int i = 0; i < actions.length; i++) {
             switch (actions[i]) {
                 case "requestfood":
                     linkin = s.f1("A");
                     break;
                 case "requestenergy":
+                    System.out.println("INDEX " + i);
                     linkin = s.f1("C");
                     break;
                 case "requestmaterials":
@@ -289,7 +290,7 @@ public class LLAPPlanChecker {
         plan.replace("\t", "");
 
         String[] actions = plan.split(",");
-
+        System.out.println("ACTIONS SSS " + Arrays.toString(actions));
         LLAPPlanChecker s = new LLAPPlanChecker(grid);
         linkin = tryPlan(actions,s);
         if(!linkin) {
