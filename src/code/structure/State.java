@@ -2,7 +2,7 @@ package code.structure;
 
 import code.enums.Attribute;
 import code.enums.RequestState;
-import code.generic.LLAPSearch;
+import code.LLAPSearch;
 
 import java.util.HashMap;
 
@@ -13,14 +13,25 @@ public class State {
     private int energy;
     private int moneySpent;
     private int delayTime;
+    private RequestState requestState;
 
-    public State(int prosperity, int food, int materials, int energy, int moneySpent,int delayTime) {
+
+    public State(int prosperity, int food, int materials, int energy, int moneySpent, int delayTime,RequestState requestState) {
         this.prosperity = prosperity;
         this.food = food;
         this.materials = materials;
         this.energy = energy;
         this.moneySpent = moneySpent;
         this.delayTime = delayTime;
+        this.requestState = requestState;
+    }
+
+    public RequestState getRequestState(){
+        return requestState;
+    }
+
+    public void setRequestState(RequestState requestState){
+        this.requestState = requestState;
     }
 
     public int getProsperity() {
@@ -39,11 +50,11 @@ public class State {
         this.food = food;
     }
 
-    public int getDelayTime(){
+    public int getDelayTime() {
         return delayTime;
     }
 
-    public void setDelayTime(int delayTime){
+    public void setDelayTime(int delayTime) {
         this.delayTime = delayTime;
     }
 
@@ -66,34 +77,31 @@ public class State {
 
 
     public State requestMaterials(int delayTime) {
-        LLAPSearch.requestState = RequestState.MATERIALS;
-        return getState(delayTime);
+        return getState(delayTime,RequestState.MATERIALS);
     }
 
     public State requestFood(int delayTime) {
-        LLAPSearch.requestState = RequestState.FOOD;
-        return getState(delayTime);
+        return getState(delayTime,RequestState.FOOD);
     }
 
     public State requestEnergy(int delayTime) {
-        LLAPSearch.requestState = RequestState.ENERGY;
-        return getState(delayTime);
+        return getState(delayTime,RequestState.ENERGY);
     }
 
-    private State getState(int delayTime) {
-        int newFood = food - 1;
-        int newMaterials = materials - 1;
-        int newEnergy = energy - 1;
+    private State getState(int delayTime,RequestState requestState) {
+        int newFood = Math.max(0, food - 1);
+        int newMaterials = Math.max(0, materials - 1);
+        int newEnergy = Math.max(0, energy - 1);
         int newMoneySpent = moneySpent + LLAPSearch.UNIT_PRICE_FOOD + LLAPSearch.UNIT_PRICE_ENERGY + LLAPSearch.UNIT_PRICE_MATERIALS;
-        return new State(prosperity, newFood, newMaterials, newEnergy, newMoneySpent,delayTime);
+        return new State(prosperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime,requestState);
     }
 
     public State doWait() {
-        int newFood = food - 1;
-        int newMaterials = materials - 1;
-        int newEnergy = energy - 1;
+        int newFood = Math.max(0, food - 1);
+        int newMaterials = Math.max(0, materials - 1);
+        int newEnergy = Math.max(0, energy - 1);
         int newMoneySpent = moneySpent + LLAPSearch.UNIT_PRICE_FOOD + LLAPSearch.UNIT_PRICE_ENERGY + LLAPSearch.UNIT_PRICE_MATERIALS;
-        return new State(prosperity, newFood, newMaterials, newEnergy, newMoneySpent,delayTime);
+        return new State(prosperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime,requestState);
     }
 
     public State doBuild(HashMap<Attribute, Integer> variables, int numOfBuild) {
@@ -103,12 +111,12 @@ public class State {
         int givenPrice = (numOfBuild == 1) ? variables.get(Attribute.PRICE_BUILD1) : variables.get(Attribute.PRICE_BUILD2);
         int givenProsperity = (numOfBuild == 1) ? variables.get(Attribute.PROSPERITY_BUILD1) : variables.get(Attribute.PROSPERITY_BUILD2);
 
-        int newFood = food - givenFood;
-        int newMaterials = materials - givenMaterials;
-        int newEnergy = energy - givenEnergy;
+        int newFood = Math.max(0, food - givenFood);
+        int newMaterials = Math.max(0, materials - givenMaterials);
+        int newEnergy = Math.max(0, energy - givenEnergy);
         int newMoneySpent = moneySpent + givenPrice + LLAPSearch.UNIT_PRICE_FOOD * givenFood + LLAPSearch.UNIT_PRICE_ENERGY * givenEnergy + LLAPSearch.UNIT_PRICE_MATERIALS * givenMaterials;
         int newProsperity = prosperity + givenProsperity;
-        return new State(newProsperity, newFood, newMaterials, newEnergy, newMoneySpent,delayTime);
+        return new State(newProsperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime,requestState);
     }
 
 
@@ -118,13 +126,13 @@ public class State {
 
     public State resourceDelivered(RequestState requestState, HashMap<Attribute, Integer> variables) {
         if (requestState == RequestState.FOOD)
-            return new State(prosperity, food + variables.get(Attribute.AMOUNT_REQUEST_FOOD), materials, energy, moneySpent,delayTime);
+            return new State(prosperity, Math.min(50, food + variables.get(Attribute.AMOUNT_REQUEST_FOOD)), materials, energy, moneySpent, delayTime,RequestState.DEFAULT);
 
         else if (requestState == RequestState.MATERIALS)
-            return new State(prosperity, food, materials + variables.get(Attribute.AMOUNT_REQUEST_MATERIALS), energy, moneySpent,delayTime);
+            return new State(prosperity, food, Math.min(50, materials + variables.get(Attribute.AMOUNT_REQUEST_MATERIALS)), energy, moneySpent, delayTime,RequestState.DEFAULT);
 
         else if (requestState == RequestState.ENERGY)
-            return new State(prosperity, food, materials, energy + variables.get(Attribute.AMOUNT_REQUEST_ENERGY), moneySpent,delayTime);
+            return new State(prosperity, food, materials, Math.min(50, energy + variables.get(Attribute.AMOUNT_REQUEST_ENERGY)), moneySpent, delayTime,RequestState.DEFAULT);
 
         return null;
     }

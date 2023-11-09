@@ -1,6 +1,7 @@
 package code.generic;
 
 import code.enums.Attribute;
+import code.enums.RequestState;
 import code.structure.State;
 
 import java.util.HashMap;
@@ -61,6 +62,6 @@ public class Problem {
         return new State(variables.get(Attribute.INITIAL_PROSPERITY),
             variables.get(Attribute.INITIAL_FOOD),
             variables.get(Attribute.INITIAL_MATERIALS),
-            variables.get(Attribute.INITIAL_ENERGY), 0,0);
+            variables.get(Attribute.INITIAL_ENERGY), 0,0, RequestState.DEFAULT);
     }
 }
