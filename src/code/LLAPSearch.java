@@ -132,24 +132,39 @@ public class LLAPSearch extends GenericSearch {
             generateBuildSuccessors(node, successors);
             generateDefaultStateSuccessors(node, successors);
         } else {
-            if (node.getState().getDelayTime() == 0) {
+            if (node.getState().getDelayTime() == 1) {
                 State currentState =  new State(node.getState().getProsperity(),node.getState().getFood(),node.getState().getMaterials(),node.getState().getEnergy(),node.getState().getMoneySpent(),node.getState().getDelayTime(),RequestState.DEFAULT);
                 State newState = currentState.resourceDelivered(node.getState().getRequestState(), problem.variables);
                 //TODO: Should we do wait first then resource delivered?
-                successors.add(new Node(newState.doWait(), node, node.getState().getMoneySpent(), Action.WAIT, node.getDepth() + 1));
+//                successors.add(new Node(newState.doWait(), node, node.getState().getMoneySpent(), Action.WAIT, node.getDepth() + 1));
                 generateBuildWithNewState(node, successors, newState);
+                generateDefaultSuccessorsWithNewState(node,successors,newState);
 
             } else {
                 State newState =new State(node.getState().getProsperity(),node.getState().getFood(),node.getState().getMaterials(),node.getState().getEnergy(),node.getState().getMoneySpent(),node.getState().getDelayTime(),node.getState().getRequestState());
-                newState.setDelayTime(newState.getDelayTime() - 1);
-                successors.add(new Node(newState.doWait(), node, node.getState().getMoneySpent(), Action.WAIT, node.getDepth() + 1));
+                newState.setDelayTime(node.getState().getDelayTime() - 1);
                 generateBuildWithNewState(node, successors, newState);
+                successors.add(new Node(newState.doWait(), node, node.getState().getMoneySpent(), Action.WAIT, node.getDepth() + 1));
 
             }
 
         }
         return successors;
     }
+
+    private static void generateDefaultSuccessorsWithNewState(Node node, List<Node> successors, State newState) {
+
+        State newStateRequestEnergy = new State(newState.getProsperity(),newState.getFood(),newState.getMaterials(),newState.getEnergy(),newState.getMoneySpent(),newState.getDelayTime(),RequestState.ENERGY);
+        successors.add(new Node(newStateRequestEnergy.requestEnergy(problem.variables.get(Attribute.DELAY_REQUEST_ENERGY)), node, node.getState().getMoneySpent(), Action.RequestEnergy, node.getDepth() + 1));
+
+        State newStateRequestMaterials = new State(newState.getProsperity(),newState.getFood(),newState.getMaterials(),newState.getEnergy(),newState.getMoneySpent(),newState.getDelayTime(),RequestState.MATERIALS);
+        successors.add(new Node(newStateRequestMaterials.requestMaterials(problem.variables.get(Attribute.DELAY_REQUEST_MATERIALS)), node, node.getState().getMoneySpent(), Action.RequestMaterials, node.getDepth() + 1));
+
+        State newStateRequestFood = new State(newState.getProsperity(),newState.getFood(),newState.getMaterials(),newState.getEnergy(),newState.getMoneySpent(),newState.getDelayTime(),RequestState.FOOD);
+        successors.add(new Node(newStateRequestFood.requestFood(problem.variables.get(Attribute.DELAY_REQUEST_FOOD)), node, node.getState().getMoneySpent(), Action.RequestFood, node.getDepth() + 1));
+
+    }
+
 
     private static void generateDefaultStateSuccessors(Node node, List<Node> successors) {
 
@@ -195,17 +210,17 @@ public class LLAPSearch extends GenericSearch {
 
 
     public static boolean isEndState(Node node) {
-        if (node.getAction() == Action.BUILD1) {
-            return node.getState().getFood() < problem.variables.get(Attribute.FOOD_USE_BUILD1)
-                || node.getState().getEnergy() < problem.variables.get(Attribute.ENERGY_USE_BUILD1)
-                || node.getState().getMaterials() < problem.variables.get(Attribute.MATERIALS_USE_BUILD1);
-        }
-
-        if (node.getAction() == Action.BUILD2) {
-            return node.getState().getFood() < problem.variables.get(Attribute.FOOD_USE_BUILD2)
-                || node.getState().getEnergy() < problem.variables.get(Attribute.ENERGY_USE_BUILD2)
-                || node.getState().getMaterials() < problem.variables.get(Attribute.MATERIALS_USE_BUILD2);
-        }
+//        if (node.getAction() == Action.BUILD1) {
+//            return node.getState().getFood() < problem.variables.get(Attribute.FOOD_USE_BUILD1)
+//                || node.getState().getEnergy() < problem.variables.get(Attribute.ENERGY_USE_BUILD1)
+//                || node.getState().getMaterials() < problem.variables.get(Attribute.MATERIALS_USE_BUILD1);
+//        }
+//
+//        if (node.getAction() == Action.BUILD2) {
+//            return node.getState().getFood() < problem.variables.get(Attribute.FOOD_USE_BUILD2)
+//                || node.getState().getEnergy() < problem.variables.get(Attribute.ENERGY_USE_BUILD2)
+//                || node.getState().getMaterials() < problem.variables.get(Attribute.MATERIALS_USE_BUILD2);
+//        }
 
         return node.getState().getMoneySpent() >= 100000 || node.getState().getFood() <= 0 || node.getState().getMaterials() <= 0 || node.getState().getEnergy() <= 0;
     }
