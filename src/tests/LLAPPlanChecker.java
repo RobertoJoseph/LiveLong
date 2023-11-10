@@ -270,13 +270,9 @@ public class LLAPPlanChecker {
         return this.v0 >= 100;
     }
     public boolean applyPlan(String grid, String solution){
-        System.out.println("THE APPLY PLAN SOLUTION " +   solution);
-        System.out.println("THE APPLY PLAN GRID " +   grid);
         boolean linkin = true;
         solution = solution.toLowerCase();
-        System.out.println("solution");
         if (solution.equals("nosolution")) {
-            System.out.println("IAM HERE");
             return false;
         }
 //    System.out.println(solution);
@@ -290,7 +286,6 @@ public class LLAPPlanChecker {
         plan.replace("\t", "");
 
         String[] actions = plan.split(",");
-        System.out.println("ACTIONS SSS " + Arrays.toString(actions));
         LLAPPlanChecker s = new LLAPPlanChecker(grid);
         linkin = tryPlan(actions,s);
         if(!linkin) {

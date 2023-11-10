@@ -10,7 +10,7 @@ public class Node {
     private int depth;
 
 
-    public Node(State state, Node parent, int pathCost,Action action,int depth) {
+    public Node(State state, Node parent, int pathCost, Action action, int depth) {
         this.state = state;
         this.parent = parent;
         this.pathCost = pathCost;
@@ -35,11 +35,11 @@ public class Node {
         this.parent = parent;
     }
 
-    public int getDepth(){
+    public int getDepth() {
         return depth;
     }
 
-    public void setDepth(int depth){
+    public void setDepth(int depth) {
         this.depth = depth;
     }
 
@@ -56,9 +56,30 @@ public class Node {
         return action;
     }
 
-    public String toString(){
-        return "State: " + state.toString() +  " Path Cost: " + pathCost + " Depth: " + depth;
+    public String toString() {
+        return "State: " + state.toString() + "Action: " + this.getAction().toString() + " Path Cost: " + pathCost + " Depth: " + depth;
     }
-    // Other methods as needed
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Node other = (Node) obj;
+        return action == other.action && state.equals(other.state) && pathCost == other.pathCost;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + state.hashCode();
+        return result;
+    }
+
+
 }
 

@@ -1,6 +1,7 @@
 package code.enums;
 
 public enum Action {
+    DEFAULT,
     RequestFood,
     RequestMaterials,
     RequestEnergy,

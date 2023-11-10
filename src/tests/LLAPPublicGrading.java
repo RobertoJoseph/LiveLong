@@ -137,6 +137,7 @@ public class LLAPPublicGrading {
         String solution = LLAPSearch.solve(initialState7, "DF", false);
         solution = solution.replace(" ", "");
         LLAPPlanChecker pc = new LLAPPlanChecker(initialState7);
+        System.out.println("THE SOLUTION   " + solution);
         assertTrue("The output actions do not lead to a goal state.", pc.applyPlan(initialState7, solution));
     }
     @Test(timeout = 120000)
