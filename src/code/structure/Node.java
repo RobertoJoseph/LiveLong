@@ -56,7 +56,9 @@ public class Node {
         return action;
     }
 
-
+    public String toString(){
+        return "State: " + state.toString() +  " Path Cost: " + pathCost + " Depth: " + depth;
+    }
     // Other methods as needed
 }
 

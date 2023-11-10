@@ -133,10 +133,14 @@ public class State {
 
         else if (requestState == RequestState.ENERGY)
             return new State(prosperity, food, materials, Math.min(50, energy + variables.get(Attribute.AMOUNT_REQUEST_ENERGY)), moneySpent, delayTime,RequestState.DEFAULT);
-
+        System.out.println("MOS*TEL");
         return null;
     }
 
+
+    public String toString(){
+        return "Prosperity: " + prosperity + " Food: " + food + " Materials: " + materials + " Energy: " + energy + " Money Spent: " + moneySpent + " Delay Time: " + delayTime + " Request State: " + requestState;
+    }
 
     // Methods for updating the state based on different actions
 

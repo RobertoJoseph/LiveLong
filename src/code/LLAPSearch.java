@@ -126,17 +126,16 @@ public class LLAPSearch extends GenericSearch {
 
 
 
-
     public static List<Node> generateSuccessorNodes(Node node) {
         List<Node> successors = new ArrayList<>();
         if (node.getState().getRequestState() == RequestState.DEFAULT) {
-            generateDefaultStateSuccessors(node, successors);
             generateBuildSuccessors(node, successors);
+            generateDefaultStateSuccessors(node, successors);
         } else {
-
             if (node.getState().getDelayTime() == 0) {
                 State currentState =  new State(node.getState().getProsperity(),node.getState().getFood(),node.getState().getMaterials(),node.getState().getEnergy(),node.getState().getMoneySpent(),node.getState().getDelayTime(),RequestState.DEFAULT);
                 State newState = currentState.resourceDelivered(node.getState().getRequestState(), problem.variables);
+                //TODO: Should we do wait first then resource delivered?
                 successors.add(new Node(newState.doWait(), node, node.getState().getMoneySpent(), Action.WAIT, node.getDepth() + 1));
                 generateBuildWithNewState(node, successors, newState);
 
@@ -155,16 +154,18 @@ public class LLAPSearch extends GenericSearch {
     private static void generateDefaultStateSuccessors(Node node, List<Node> successors) {
 
         // For RequestFood
+        //TODO: node.getMoneySpent should be of the newState maybe?
         State newStateRequestFood = new State(node.getState().getProsperity(),node.getState().getFood(),node.getState().getMaterials(),node.getState().getEnergy(),node.getState().getMoneySpent(),node.getState().getDelayTime(),RequestState.FOOD);
         successors.add(new Node(newStateRequestFood.requestFood(problem.variables.get(Attribute.DELAY_REQUEST_FOOD)), node, node.getState().getMoneySpent(), Action.RequestFood, node.getDepth() + 1));
-
-        // For RequestEnergy
-        State newStateRequestEnergy =new State(node.getState().getProsperity(), node.getState().getFood(), node.getState().getMaterials(), node.getState().getEnergy(), node.getState().getMoneySpent(), node.getState().getDelayTime(), RequestState.ENERGY);
-        successors.add(new Node(newStateRequestEnergy.requestEnergy(problem.variables.get(Attribute.DELAY_REQUEST_ENERGY)), node, node.getState().getMoneySpent(), Action.RequestEnergy, node.getDepth() + 1));
 
         // For RequestMaterials
         State newStateRequestMaterials = new State(node.getState().getProsperity(), node.getState().getFood(), node.getState().getMaterials(), node.getState().getEnergy(), node.getState().getMoneySpent(), node.getState().getDelayTime(), RequestState.MATERIALS);
         successors.add(new Node(newStateRequestMaterials.requestMaterials(problem.variables.get(Attribute.DELAY_REQUEST_MATERIALS)), node, node.getState().getMoneySpent(), Action.RequestMaterials, node.getDepth() + 1));
+        // For RequestEnergy
+        State newStateRequestEnergy =new State(node.getState().getProsperity(), node.getState().getFood(), node.getState().getMaterials(), node.getState().getEnergy(), node.getState().getMoneySpent(), node.getState().getDelayTime(), RequestState.ENERGY);
+        successors.add(new Node(newStateRequestEnergy.requestEnergy(problem.variables.get(Attribute.DELAY_REQUEST_ENERGY)), node, node.getState().getMoneySpent(), Action.RequestEnergy, node.getDepth() + 1));
+
+
     }
 
     private static void generateBuildSuccessors(Node node, List<Node> successors) {
