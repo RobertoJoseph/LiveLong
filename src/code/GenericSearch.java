@@ -19,7 +19,7 @@ package code;
         boolean visualize = true;
         LLAPSearch llapSearch = new LLAPSearch();
         String result = llapSearch.solve(initialState, strategy, visualize);
-        System.out.println("THE RESULT " +result);
+        System.out.println("THE RESULT IS: " + result);
 
 
     }
