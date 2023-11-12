@@ -9,13 +9,13 @@ package code;
 
     public static void main(String[] args) {
         String initialState =
-            "50;" +
-                "4,4,4;" +
-                "50,60,70;" +
-                "2,1;2,1;2,1;" +
-                "300,2,2,2,40;" +
-                "300,2,2,2,50;";
-        String strategy = "DF";
+            "17;" +
+                "49,30,46;" +
+                "7,57,6;" +
+                "7,1;20,2;29,2;" +
+                "350,10,9,8,28;" +
+                "408,8,12,13,34;";
+        String strategy = "BF";
         boolean visualize = true;
         LLAPSearch llapSearch = new LLAPSearch();
         String result = llapSearch.solve(initialState, strategy, visualize);

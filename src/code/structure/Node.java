@@ -70,16 +70,13 @@ public class Node {
             return false;
         }
         Node other = (Node) obj;
-        return action == other.action && state.equals(other.state) && pathCost == other.pathCost;
+        return action == other.action && state.equals(other.state)&&pathCost>=other.pathCost;
     }
 
     @Override
     public int hashCode() {
-        int result = 17;
-        result = 31 * result + state.hashCode();
-        return result;
+        return state.hashCode();
     }
-
 
 }
 
