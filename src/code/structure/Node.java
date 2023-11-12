@@ -70,7 +70,7 @@ public class Node {
             return false;
         }
         Node other = (Node) obj;
-        return action == other.action && state.equals(other.state);
+        return action == other.action && state.equals(other.state)&&pathCost>=other.pathCost;
     }
 
     @Override

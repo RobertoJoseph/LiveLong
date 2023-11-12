@@ -36,8 +36,10 @@ public class LLAPSearch extends GenericSearch {
                 value = dfs(root, 0,solution, new HashSet<>());
                 break;
             case "ID":
+                value = iterativeDeepeningSearch(root, solution);
                 break;
             case "UC":
+                value = uniformCostSearch(root);
                 break;
             case "GR1":
                 break;
@@ -111,23 +113,26 @@ public class LLAPSearch extends GenericSearch {
         Set<Node> visitedNodes = new HashSet<>();
         queue.add(node);
         visitedNodes.add(node);
-
         while(!queue.isEmpty()){
-            System.out.println("BFS: " + queue.size() + " nodes in the queue");
             Node currentNode = queue.poll();
             assert currentNode != null;
             if(isGoalState(currentNode)){
-                System.out.println("GOALLLLL");
                 return getPathToGoalBfs(currentNode,0);
             }
-            if (isEndState(currentNode) || (visitedNodes.contains(currentNode) && currentNode.getAction() != Action.DEFAULT)) {
+
+            if (isEndState(currentNode)) {
                 continue;
             }
+
+            if (visitedNodes.contains(currentNode) && currentNode.getAction() != Action.DEFAULT) {
+                continue;
+            }
+
+            visitedNodes.add(currentNode);
 
             List<Node> successors = generateSuccessorNodes(currentNode);
             for(Node successor: successors){
                 if(!visitedNodes.contains(successor)){
-//                    visitedNodes.add(successor);
                     queue.add(successor);
                 }
             }
@@ -135,37 +140,85 @@ public class LLAPSearch extends GenericSearch {
         return null;
     }
 
+    public static String iterativeDeepeningSearch(Node root, StringBuilder solution) {
+        for (int depth = 0; depth < Integer.MAX_VALUE; depth++) {
+            String result = depthLimitedSearch(root, depth, solution, new HashSet<>());
+            if (result != null) {
+                return result;
+            }
+        }
+        return null; // If no solution is found within the depth limit
+    }
 
-//    public static String breadthFirstSearch(Node initialNode) {
-//        Queue<Node> queue = new LinkedList<>();
-//        Map<Node, List<Action>> pathMap = new HashMap<>();
-//        queue.add(initialNode);
-//        pathMap.put(initialNode, new ArrayList<>());
-//        while (!queue.isEmpty()) {
-//            Node currentNode = queue.poll();
-//
-//            if (isGoalState(currentNode)) {
-//                List<Action> path = pathMap.get(currentNode);
-//                return formatPath(path, currentNode);
-//            }
-//            if (isEndState(currentNode)) {
-//                List<Action> path = new ArrayList<>(pathMap.get(currentNode));
-//                path.add(currentNode.getAction());
-//                pathMap.put(currentNode, path);
-//                continue;
-//            }
-//            // Generate successor nodes for the current node
-//            List<Node> successors = generateSuccessorNodes(currentNode);
-//
-//            for (Node successor : successors) {
-//                List<Action> path = new ArrayList<>(pathMap.get(currentNode));
-//                path.add(successor.getAction());
-//                pathMap.put(successor, path);
-//                queue.add(successor);
-//            }
-//        }
-//        return "No path found";
-//    }
+
+    public static String depthLimitedSearch(Node node, int depthLimit, StringBuilder pathString, HashSet<Node> visitedNodes) {
+        return recursiveDLS(node, depthLimit, 0, pathString, visitedNodes);
+    }
+
+    private static String recursiveDLS(Node node, int depthLimit, int currentDepth, StringBuilder pathString, HashSet<Node> visitedNodes) {
+        if (isGoalState(node)) {
+            return getPathToGoal(node, 0, pathString);
+        }
+
+        if (currentDepth == depthLimit || isEndState(node) || visitedNodes.contains(node)) {
+            return null;
+        }
+
+        visitedNodes.add(node);
+        List<Node> successors = generateSuccessorNodes(node);
+
+        for (Node successor : successors) {
+            pathString.append(successor.getAction()).append(",");
+            String result = recursiveDLS(successor, depthLimit, currentDepth + 1, pathString, visitedNodes);
+
+            if (result != null) {
+                return result;
+            }
+
+            pathString.setLength(pathString.length() - successor.getAction().toString().length() - 1);
+        }
+
+        return null;
+    }
+
+    public static String uniformCostSearch(Node root) {
+        PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingInt(Node::getPathCost));
+        Set<Node> visitedNodes = new HashSet<>();
+
+        queue.add(root);
+        visitedNodes.add(root);
+
+        while (!queue.isEmpty()) {
+            System.out.println("QUEUE SIZE: " + queue.size());
+            Node currentNode = queue.poll();
+
+            if (isGoalState(currentNode)) {
+                return getPathToGoalBfs(currentNode, 0);
+            }
+
+            if (isEndState(currentNode)) {
+                continue;
+            }
+            if (visitedNodes.contains(currentNode) && currentNode.getAction() != Action.DEFAULT) {
+                System.out.println("CONTAINS");
+                continue;
+            }
+            visitedNodes.add(currentNode);
+
+            List<Node> successors = generateSuccessorNodes(currentNode);
+
+            for (Node successor : successors) {
+                if (!visitedNodes.contains(successor)) {
+                    queue.add(successor);
+                }
+            }
+        }
+
+        return null;
+    }
+
+
+
 
     private static String formatPath(List<Action> path, Node currentNode) {
         StringBuilder pathString = new StringBuilder("Path: ");
@@ -187,38 +240,53 @@ public class LLAPSearch extends GenericSearch {
             generateDefaultStateSuccessors(node, successors);
         } else {
             if (node.getState().getDelayTime() == 1) {
-                State currentState =  new State(node.getState().getProsperity(),node.getState().getFood(),node.getState().getMaterials(),node.getState().getEnergy(),node.getState().getMoneySpent(),node.getState().getDelayTime(),RequestState.DEFAULT);
-                State newState = currentState.resourceDelivered(node.getState().getRequestState(), problem.variables);
+
+                //Generate Build successors with Resource Delivered
+                State newState =  node.getState().resourceDelivered(node.getState().getRequestState(), problem.variables);
 
                 generateBuildWithNewState(node, successors, newState);
+
+                //Generate Default successors with Resource Delivered
                 if(node.getAction()==Action.WAIT)
                     generateDefaultSuccessorsWithNewState(node,successors,newState);
-                successors.add(new Node(newState.doWait(), node, node.getState().getMoneySpent(), Action.WAIT, node.getDepth() + 1));
 
+                //Generate Wait Action
+
+                generateWaitSuccessor(node, newState, successors);
 
             } else {
-                State newState =new State(node.getState().getProsperity(),node.getState().getFood(),node.getState().getMaterials(),node.getState().getEnergy(),node.getState().getMoneySpent(),node.getState().getDelayTime(),node.getState().getRequestState());
-                newState.setDelayTime(node.getState().getDelayTime() - 1);
+                State currentState = node.getState(); // Get the current state of the node
+                State newState = new State(
+                    currentState.getProsperity(),
+                    currentState.getFood(),
+                    currentState.getMaterials(),
+                    currentState.getEnergy(),
+                    currentState.getMoneySpent(),
+                    currentState.getDelayTime()-1,
+                    currentState.getRequestState()
+                );
+
                 generateBuildWithNewState(node, successors, newState);
-                successors.add(new Node(newState.doWait(), node, node.getState().getMoneySpent(), Action.WAIT, node.getDepth() + 1));
+                generateWaitSuccessor(node, newState, successors);
             }
 
         }
         return successors;
     }
 
+    private static void generateWaitSuccessor(Node node, State newState, List<Node> successors) {
+        State doWaitState =  newState.doWait();
+        successors.add(new Node(doWaitState, node, doWaitState.getMoneySpent(), Action.WAIT, node.getDepth() + 1));
+    }
+
     private static void generateDefaultSuccessorsWithNewState(Node node, List<Node> successors, State newState) {
 
-//        State newStateRequestEnergy = new State(newState.getProsperity(),newState.getFood(),newState.getMaterials(),newState.getEnergy(),newState.getMoneySpent(),newState.getDelayTime(),RequestState.ENERGY);
         State newRequestFoodState = newState.requestEnergy(problem.variables.get(Attribute.DELAY_REQUEST_ENERGY));
-
         successors.add(new Node(newRequestFoodState, node, newRequestFoodState.getMoneySpent(), Action.RequestEnergy, node.getDepth() + 1));
 
-//        State newStateRequestMaterials = new State(newState.getProsperity(),newState.getFood(),newState.getMaterials(),newState.getEnergy(),newState.getMoneySpent(),newState.getDelayTime(),RequestState.MATERIALS);
         State newStateRequestMaterials = newState.requestMaterials(problem.variables.get(Attribute.DELAY_REQUEST_MATERIALS));
         successors.add(new Node(newStateRequestMaterials, node, newStateRequestMaterials.getMoneySpent(), Action.RequestMaterials, node.getDepth() + 1));
 
-//        State newStateRequestFood = new State(newState.getProsperity(),newState.getFood(),newState.getMaterials(),newState.getEnergy(),newState.getMoneySpent(),newState.getDelayTime(),RequestState.FOOD);
         State newStateRequestFood = newState.requestFood(problem.variables.get(Attribute.DELAY_REQUEST_FOOD));
         successors.add(new Node(newStateRequestFood, node,newStateRequestFood.getMoneySpent() , Action.RequestFood, node.getDepth() + 1));
 
@@ -229,16 +297,14 @@ public class LLAPSearch extends GenericSearch {
 
         // For RequestFood
         //TODO: node.getMoneySpent should be of the newState maybe?
-//        State newStateRequestFood = new State(node.getState().getProsperity(),node.getState().getFood(),node.getState().getMaterials(),node.getState().getEnergy(),node.getState().getMoneySpent(),node.getState().getDelayTime(),RequestState.FOOD);
         State newRequestFoodState = node.getState().requestFood(problem.variables.get(Attribute.DELAY_REQUEST_FOOD));
         successors.add(new Node(newRequestFoodState, node, newRequestFoodState.getMoneySpent(), Action.RequestFood, node.getDepth() + 1));
 
         // For RequestMaterials
-//        State newStateRequestMaterials = new State(node.getState().getProsperity(), node.getState().getFood(), node.getState().getMaterials(), node.getState().getEnergy(), node.getState().getMoneySpent(), node.getState().getDelayTime(), RequestState.MATERIALS);
         State newStateRequestMaterials = node.getState().requestMaterials(problem.variables.get(Attribute.DELAY_REQUEST_MATERIALS));
         successors.add(new Node(newStateRequestMaterials, node, newStateRequestMaterials.getMoneySpent(), Action.RequestMaterials, node.getDepth() + 1));
+
         // For RequestEnergy
-//        State newStateRequestEnergy =new State(node.getState().getProsperity(), node.getState().getFood(), node.getState().getMaterials(), node.getState().getEnergy(), node.getState().getMoneySpent(), node.getState().getDelayTime(), RequestState.ENERGY);
         State newStateRequestEnergy = node.getState().requestEnergy(problem.variables.get(Attribute.DELAY_REQUEST_ENERGY));
         successors.add(new Node(newStateRequestEnergy, node, newStateRequestEnergy.getMoneySpent(), Action.RequestEnergy, node.getDepth() + 1));
 
@@ -267,12 +333,10 @@ public class LLAPSearch extends GenericSearch {
         if (checkIfCanBuild(node, 1)) {
             State newState1 = newState.doBuild(problem.variables, 1);
             successors.add(new Node(newState1, node, newState1.getMoneySpent(), Action.BUILD1, node.getDepth() + 1));
-//            successors.add(new Node(newState.doBuild(problem.variables, 1), node, node.getState().getMoneySpent(), Action.BUILD1, node.getDepth() + 1));
         }
         if (checkIfCanBuild(node, 2)) {
             State newState2 = newState.doBuild(problem.variables, 2);
             successors.add(new Node(newState2, node, newState2.getMoneySpent(), Action.BUILD2, node.getDepth() + 1));
-//            successors.add(new Node(newState.doBuild(problem.variables, 2), node, node.getState().getMoneySpent(), Action.BUILD2, node.getDepth() + 1));
         }
     }
 
