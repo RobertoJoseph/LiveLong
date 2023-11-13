@@ -30,27 +30,20 @@ public record Node(State state, code.structure.Node parent, int pathCost, Action
         return state.hashCode();
     }
 
-    public int getHeuristicOne() {
-        return Math.max(0, 100 - state().prosperity());
+    public int getHeuristicOne(HashMap<Attribute, Integer> variables) {
+        int maxProsperity = Math.max(variables.get(Attribute.PROSPERITY_BUILD1), variables.get(Attribute.PROSPERITY_BUILD2));
+        int minPrice = Math.min(variables.get(Attribute.PRICE_BUILD1), variables.get(Attribute.PRICE_BUILD2));
+        int neededProsperity = 100 - this.state.prosperity();
+        int factor = neededProsperity / maxProsperity;
+        return pathCost() + (factor * minPrice);
     }
 
-    public int getHeuristicTwo() {
-        State currentState = state();
-
-        // Assuming a linear relationship between prosperity and cost
-        int estimatedCost = Math.max(0, 100 - currentState.prosperity());
-
-        // Penalize the heuristic based on the scarcity of resources
-        estimatedCost += 2 * (currentState.food() + currentState.materials() + currentState.energy());
-
-        return estimatedCost;
-    }
-
-    public int totalCost(int heuristic) {
-        if (heuristic == 1)
-            return pathCost() + getHeuristicOne();
-        else
-            return pathCost() + getHeuristicTwo();
+    public int getHeuristicTwo(HashMap<Attribute, Integer> variables) {
+        int maxProsperity = Math.max(variables.get(Attribute.PROSPERITY_BUILD1), variables.get(Attribute.PROSPERITY_BUILD2));
+        int neededProsperity = 100 - this.state.prosperity();
+        int neededFood = variables.get(Attribute.FOOD_USE_BUILD1);
+        int factor = neededProsperity / maxProsperity;
+        return ((factor*neededFood)-this.state.food()) * variables.get(Attribute.UNIT_PRICE_FOOD);
     }
 
     public boolean isEnoughMoneyForBuild(HashMap<Attribute, Integer> variables, int numOfBuild, int moneySpent) {
