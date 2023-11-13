@@ -6,62 +6,10 @@ import code.enums.Attribute;
 
 import java.util.HashMap;
 
-public class Node {
-    private State state;
-    private Node parent;
-    private int pathCost;
-    private final Action action;
-    private int depth;
-
-
-    public Node(State state, Node parent, int pathCost, Action action, int depth) {
-        this.state = state;
-        this.parent = parent;
-        this.pathCost = pathCost;
-        this.action = action;
-        this.depth = depth;
-    }
-
-    // Getters and setters for the attributes
-    public State getState() {
-        return state;
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
-
-    public Node getParent() {
-        return parent;
-    }
-
-    public void setParent(Node parent) {
-        this.parent = parent;
-    }
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-
-    public int getPathCost() {
-        return pathCost;
-    }
-
-    public void setPathCost(int pathCost) {
-        this.pathCost = pathCost;
-    }
-
-    public Action getAction() {
-        return action;
-    }
+public record Node(State state, code.structure.Node parent, int pathCost, Action action, int depth) {
 
     public String toString() {
-        return "State: " + state.toString() + "Action: " + this.getAction().toString() + " Path Cost: " + pathCost + " Depth: " + depth;
+        return "State: " + state.toString() + "Action: " + this.action().toString() + " Path Cost: " + pathCost + " Depth: " + depth;
     }
 
 
@@ -82,31 +30,30 @@ public class Node {
         return state.hashCode();
     }
 
-    public static int getHeuristicOne(Node node) {
-        return Math.max(0, 100 - node.getState().getProsperity());
+    public int getHeuristicOne() {
+        return Math.max(0, 100 - state().prosperity());
     }
 
-    // Add this method to your Node class
-    public static int getHeuristicTwo(Node node) {
-        State currentState = node.getState();
+    public int getHeuristicTwo() {
+        State currentState = state();
 
         // Assuming a linear relationship between prosperity and cost
-        int estimatedCost = Math.max(0, 100 - currentState.getProsperity());
+        int estimatedCost = Math.max(0, 100 - currentState.prosperity());
 
         // Penalize the heuristic based on the scarcity of resources
-        estimatedCost += 2 * (currentState.getFood() + currentState.getMaterials() + currentState.getEnergy());
+        estimatedCost += 2 * (currentState.food() + currentState.materials() + currentState.energy());
 
         return estimatedCost;
     }
 
-    public static int totalCost(Node node, int heuristic) {
+    public int totalCost(int heuristic) {
         if (heuristic == 1)
-            return node.getPathCost() + getHeuristicOne(node);
+            return pathCost() + getHeuristicOne();
         else
-            return node.getPathCost() + getHeuristicTwo(node);
+            return pathCost() + getHeuristicTwo();
     }
 
-    public  boolean isEnoughMoneyForBuild(HashMap<Attribute, Integer> variables, int numOfBuild, int moneySpent) {
+    public boolean isEnoughMoneyForBuild(HashMap<Attribute, Integer> variables, int numOfBuild, int moneySpent) {
         int givenFood = (numOfBuild == 1) ? variables.get(Attribute.FOOD_USE_BUILD1) : variables.get(Attribute.FOOD_USE_BUILD2);
         int givenMaterials = (numOfBuild == 1) ? variables.get(Attribute.MATERIALS_USE_BUILD1) : variables.get(Attribute.MATERIALS_USE_BUILD2);
         int givenEnergy = (numOfBuild == 1) ? variables.get(Attribute.ENERGY_USE_BUILD1) : variables.get(Attribute.ENERGY_USE_BUILD2);
@@ -118,8 +65,15 @@ public class Node {
     }
 
     public boolean isEnoughMoneyDefaultRequest(HashMap<Attribute, Integer> variables, int moneySpent) {
-        return 100000 - (moneySpent +  LLAPSearch.UNIT_PRICE_FOOD  + LLAPSearch.UNIT_PRICE_ENERGY  + LLAPSearch.UNIT_PRICE_MATERIALS) >= 0;
+        return 100000 - (moneySpent + LLAPSearch.UNIT_PRICE_FOOD + LLAPSearch.UNIT_PRICE_ENERGY + LLAPSearch.UNIT_PRICE_MATERIALS) >= 0;
 
+    }
+
+    public boolean canBuild(HashMap<Attribute, Integer> variables, int buildType) {
+        return this.state().food() >= variables.get(buildType == 1 ? Attribute.FOOD_USE_BUILD1 : Attribute.FOOD_USE_BUILD2)
+            && this.state().energy() >= variables.get(buildType == 1 ? Attribute.ENERGY_USE_BUILD1 : Attribute.ENERGY_USE_BUILD2)
+            && this.state().materials() >= variables.get(buildType == 1 ? Attribute.MATERIALS_USE_BUILD1 : Attribute.MATERIALS_USE_BUILD2)
+            && this.isEnoughMoneyForBuild(variables, buildType, this.state().moneySpent());
     }
 
 

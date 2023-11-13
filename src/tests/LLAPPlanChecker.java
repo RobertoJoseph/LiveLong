@@ -231,7 +231,6 @@ public class LLAPPlanChecker {
 
     public boolean tryPlan(String[] actions, LLAPPlanChecker s) {
         boolean linkin = false;
-        System.out.println("Actions" + Arrays.toString(actions));
 
         for (int i = 0; i < actions.length; i++) {
             switch (actions[i]) {
@@ -239,7 +238,6 @@ public class LLAPPlanChecker {
                     linkin = s.f1("A");
                     break;
                 case "requestenergy":
-                    System.out.println("INDEX " + i);
                     linkin = s.f1("C");
                     break;
                 case "requestmaterials":
@@ -275,7 +273,6 @@ public class LLAPPlanChecker {
         if (solution.equals("nosolution")) {
             return false;
         }
-//    System.out.println(solution);
         String[] solutionArray  = solution.split(";");
         String plan = solutionArray[0];
         int blue = Integer.parseInt(solutionArray[1]);
