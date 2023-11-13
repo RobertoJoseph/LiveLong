@@ -96,23 +96,6 @@ public class State {
     }
 
 
-//    private State getState(int givenDelayTime,RequestState requestState) {
-//        int newFood =  food - 1;
-//        int newMaterials =  materials - 1;
-//        int newEnergy =  energy - 1;
-//        int newMoneySpent = moneySpent + LLAPSearch.UNIT_PRICE_FOOD + LLAPSearch.UNIT_PRICE_ENERGY + LLAPSearch.UNIT_PRICE_MATERIALS;
-//        return new State(prosperity, newFood, newMaterials, newEnergy, newMoneySpent, givenDelayTime,requestState);
-//    }
-//
-//    public State doWait() {
-//        int newFood = food - 1;
-//        int newMaterials =  materials - 1;
-//        int newEnergy =  energy - 1;
-//        int newMoneySpent = moneySpent + LLAPSearch.UNIT_PRICE_FOOD + LLAPSearch.UNIT_PRICE_ENERGY + LLAPSearch.UNIT_PRICE_MATERIALS;
-//        return new State(prosperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime,requestState);
-//    }
-//
-
     private State createState(int delayTime, RequestState bodyRequestState) {
         int newFood = food - 1;
         int newMaterials = materials - 1;
