@@ -240,31 +240,26 @@ public class LLAPSearch extends GenericSearch {
             generateDefaultStateSuccessors(node, successors);
         } else {
             if (node.getState().getDelayTime() == 1) {
-
                 State newState = node.getState().resourceDelivered(node.getState().getRequestState(), problem.variables);
                 generateBuildWithNewState(node, successors, newState);
-
-                if (node.getAction() == Action.WAIT)
-                    generateDefaultSuccessorsWithNewState(node, successors, newState);
-
                 generateWaitSuccessor(node, newState, successors);
-
             } else {
-                State currentState = node.getState(); // Get the current state of the node
-                State newState = new State(
-                    currentState.getProsperity(),
-                    currentState.getFood(),
-                    currentState.getMaterials(),
-                    currentState.getEnergy(),
-                    currentState.getMoneySpent(),
-                    currentState.getDelayTime() - 1,
-                    currentState.getRequestState()
-                );
-
-                generateBuildWithNewState(node, successors, newState);
-                generateWaitSuccessor(node, newState, successors);
+                // Add condition to handle delay time greater than 1
+                if (node.getState().getDelayTime() > 1) {
+                    State currentState = node.getState();
+                    State newState = new State(
+                        currentState.getProsperity(),
+                        currentState.getFood(),
+                        currentState.getMaterials(),
+                        currentState.getEnergy(),
+                        currentState.getMoneySpent(),
+                        currentState.getDelayTime() - 1,
+                        currentState.getRequestState()
+                    );
+                    generateBuildWithNewState(node, successors, newState);
+                    generateWaitSuccessor(node, newState, successors);
+                }
             }
-
         }
         return successors;
     }
