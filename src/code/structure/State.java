@@ -16,7 +16,7 @@ public class State {
     private RequestState requestState;
 
 
-    public State(int prosperity, int food, int materials, int energy, int moneySpent, int delayTime,RequestState requestState) {
+    public State(int prosperity, int food, int materials, int energy, int moneySpent, int delayTime, RequestState requestState) {
         this.prosperity = prosperity;
         this.food = food;
         this.materials = materials;
@@ -26,11 +26,11 @@ public class State {
         this.requestState = requestState;
     }
 
-    public RequestState getRequestState(){
+    public RequestState getRequestState() {
         return requestState;
     }
 
-    public void setRequestState(RequestState requestState){
+    public void setRequestState(RequestState requestState) {
         this.requestState = requestState;
     }
 
@@ -82,18 +82,18 @@ public class State {
     public State doWait() {
         return createState(delayTime, requestState);
     }
+
     public State requestMaterials(int delayTime) {
-        return getState(delayTime,RequestState.MATERIALS);
+        return getState(delayTime, RequestState.MATERIALS);
     }
 
     public State requestFood(int delayTime) {
-        return getState(delayTime,RequestState.FOOD);
+        return getState(delayTime, RequestState.FOOD);
     }
 
     public State requestEnergy(int delayTime) {
-        return getState(delayTime,RequestState.ENERGY);
+        return getState(delayTime, RequestState.ENERGY);
     }
-
 
 
 //    private State getState(int givenDelayTime,RequestState requestState) {
@@ -113,17 +113,13 @@ public class State {
 //    }
 //
 
-    private State createState(int delayTime, RequestState requestState) {
+    private State createState(int delayTime, RequestState bodyRequestState) {
         int newFood = food - 1;
         int newMaterials = materials - 1;
         int newEnergy = energy - 1;
         int newMoneySpent = moneySpent + LLAPSearch.UNIT_PRICE_FOOD + LLAPSearch.UNIT_PRICE_ENERGY + LLAPSearch.UNIT_PRICE_MATERIALS;
-        return new State(prosperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime, requestState);
+        return new State(prosperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime, bodyRequestState);
     }
-
-
-
-
 
 
     public State doBuild(HashMap<Attribute, Integer> variables, int numOfBuild) {
@@ -134,12 +130,14 @@ public class State {
         int givenProsperity = (numOfBuild == 1) ? variables.get(Attribute.PROSPERITY_BUILD1) : variables.get(Attribute.PROSPERITY_BUILD2);
 
         int newFood = food - givenFood;
-        int newMaterials =  materials - givenMaterials;
+        int newMaterials = materials - givenMaterials;
         int newEnergy = energy - givenEnergy;
-        int newMoneySpent = moneySpent + givenPrice + LLAPSearch.UNIT_PRICE_FOOD * givenFood + LLAPSearch.UNIT_PRICE_ENERGY * givenEnergy + LLAPSearch.UNIT_PRICE_MATERIALS * givenMaterials;
+        int newMoneySpent = moneySpent + givenPrice + (LLAPSearch.UNIT_PRICE_FOOD * givenFood) + (LLAPSearch.UNIT_PRICE_ENERGY * givenEnergy) + (LLAPSearch.UNIT_PRICE_MATERIALS * givenMaterials);
         int newProsperity = prosperity + givenProsperity;
-        return new State(newProsperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime,requestState);
+        return new State(newProsperity, newFood, newMaterials, newEnergy, newMoneySpent, delayTime, requestState);
     }
+
+
 
 
     public int getMoneySpent() {
@@ -148,20 +146,20 @@ public class State {
 
     public State resourceDelivered(RequestState requestState, HashMap<Attribute, Integer> variables) {
         if (requestState == RequestState.FOOD)
-            return new State(prosperity, Math.min(50, food + variables.get(Attribute.AMOUNT_REQUEST_FOOD)), materials, energy, moneySpent, delayTime,RequestState.DEFAULT);
+            return new State(prosperity, Math.min(50, food + variables.get(Attribute.AMOUNT_REQUEST_FOOD)), materials, energy, moneySpent, delayTime-1, RequestState.DEFAULT);
 
         else if (requestState == RequestState.MATERIALS)
-            return new State(prosperity, food, Math.min(50, materials + variables.get(Attribute.AMOUNT_REQUEST_MATERIALS)), energy, moneySpent, delayTime,RequestState.DEFAULT);
+            return new State(prosperity, food, Math.min(50, materials + variables.get(Attribute.AMOUNT_REQUEST_MATERIALS)), energy, moneySpent, delayTime-1, RequestState.DEFAULT);
 
         else if (requestState == RequestState.ENERGY)
-            return new State(prosperity, food, materials, Math.min(50, energy + variables.get(Attribute.AMOUNT_REQUEST_ENERGY)), moneySpent, delayTime,RequestState.DEFAULT);
+            return new State(prosperity, food, materials, Math.min(50, energy + variables.get(Attribute.AMOUNT_REQUEST_ENERGY)), moneySpent, delayTime-1, RequestState.DEFAULT);
         System.out.println("MOS*TEL");
         return null;
     }
 
 
-    public String toString(){
-        return "Prosperity: " + prosperity + " Food: " + food + " Materials: " + materials + " Energy: " + energy + " Money Spent: " + moneySpent + " Delay Time: " + delayTime + " Request State: " + requestState+" ";
+    public String toString() {
+        return "Prosperity: " + prosperity + " Food: " + food + " Materials: " + materials + " Energy: " + energy + " Money Spent: " + moneySpent + " Delay Time: " + delayTime + " Request State: " + requestState + " ";
     }
 
 
@@ -178,9 +176,8 @@ public class State {
             food == other.food &&
             materials == other.materials &&
             energy == other.energy &&
-            moneySpent == other.moneySpent &&
-            delayTime == other.delayTime &&
-            requestState == other.requestState;
+            moneySpent == other.moneySpent&&
+            delayTime == other.delayTime && requestState == other.requestState;
     }
 
     @Override
@@ -192,14 +189,9 @@ public class State {
         result = 31 * result + energy;
         result = 31 * result + moneySpent;
         result = 31 * result + delayTime;
-        result = 31 * result + (requestState != RequestState.DEFAULT ? requestState.hashCode() : 0);
+        result = 31 * result + requestState.hashCode();  // Include requestState in the hash code calculation
         return result;
     }
-
-
-
-
-
 
 
 }
