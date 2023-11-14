@@ -31,14 +31,14 @@ public class LLAPSearch extends GenericSearch {
         StringBuilder solution = new StringBuilder();
 
         String value = switch (strategy) {
-            case "BF" -> breadthFirstSearch(root);
+            case "BF" -> breadthFirstSearch(root, 0);
             case "DF" -> dfs(root, 0, solution, new HashSet<>());
             case "ID" -> iterativeDeepeningSearch(root, solution);
-            case "UC" -> searchStrategy(root, 0, 0);
-            case "GR1" -> searchStrategy(root, 1, 1);
-            case "GR2" -> searchStrategy(root, 1, 2);
-            case "AS1" -> searchStrategy(root, 2, 1);
-            case "AS2" -> searchStrategy(root, 2, 2);
+            case "UC" -> searchStrategy(root, 0, 0,0);
+            case "GR1" -> searchStrategy(root, 1, 1,0);
+            case "GR2" -> searchStrategy(root, 1, 2,0);
+            case "AS1" -> searchStrategy(root, 2, 1,0);
+            case "AS2" -> searchStrategy(root, 2, 2,0);
             default -> null;
         };
         return value == null ? "NOSOLUTION" : value;
@@ -46,6 +46,7 @@ public class LLAPSearch extends GenericSearch {
 
 
     public static String dfs(Node node, int numOfNodes, StringBuilder pathString, HashSet<Node> visitedNodes) {
+
 
         if (isGoalState(node)) {
             return getPathToGoal(node, numOfNodes);
@@ -55,10 +56,10 @@ public class LLAPSearch extends GenericSearch {
         }
 
         visitedNodes.add(node);
+        numOfNodes++;
         List<Node> successors = generateSuccessorNodes(node);
         for (Node successor : successors) {
             pathString.append(successor.action()).append(",");
-            numOfNodes++;
             String result = dfs(successor, numOfNodes, pathString, visitedNodes);
             if (result != null) {
                 return result;
@@ -70,16 +71,17 @@ public class LLAPSearch extends GenericSearch {
     }
 
 
-    public static String breadthFirstSearch(Node node) {
+    public static String breadthFirstSearch(Node node,int numOfNodes) {
         Queue<Node> queue = new LinkedList<>();
         Set<Node> visitedNodes = new HashSet<>();
         queue.add(node);
         visitedNodes.add(node);
         while (!queue.isEmpty()) {
             Node currentNode = queue.poll();
+            numOfNodes++;
             assert currentNode != null;
             if (isGoalState(currentNode)) {
-                return getPathToGoal(currentNode, 0);
+                return getPathToGoal(currentNode, numOfNodes);
             }
 
             if (isEndState(currentNode)) {
@@ -114,12 +116,12 @@ public class LLAPSearch extends GenericSearch {
 
 
     public static String depthLimitedSearch(Node node, int depthLimit, StringBuilder pathString, HashSet<Node> visitedNodes) {
-        return recursiveDLS(node, depthLimit, 0, visitedNodes);
+        return recursiveDLS(node, depthLimit, 0, visitedNodes,0);
     }
 
-    private static String recursiveDLS(Node node, int depthLimit, int currentDepth, HashSet<Node> visitedNodes) {
+    private static String recursiveDLS(Node node, int depthLimit, int currentDepth, HashSet<Node> visitedNodes,int numOfNodes) {
         if (isGoalState(node)) {
-            return getPathToGoal(node, 0);
+            return getPathToGoal(node, numOfNodes);
         }
 
         if (currentDepth == depthLimit || isEndState(node) || visitedNodes.contains(node)) {
@@ -127,10 +129,11 @@ public class LLAPSearch extends GenericSearch {
         }
 
         visitedNodes.add(node);
+        numOfNodes++;
         List<Node> successors = generateSuccessorNodes(node);
 
         for (Node successor : successors) {
-            String result = recursiveDLS(successor, depthLimit, currentDepth + 1, visitedNodes);
+            String result = recursiveDLS(successor, depthLimit, currentDepth + 1, visitedNodes,numOfNodes);
             if (result != null) {
                 return result;
             }
@@ -140,7 +143,7 @@ public class LLAPSearch extends GenericSearch {
     }
 
 
-    public static String searchStrategy(Node root, int strategy, int heuristic) {
+    public static String searchStrategy(Node root, int strategy, int heuristic,int numofNodes) {
         PriorityQueue<Node> queue = createPriorityQueue(strategy, heuristic);
         Set<Node> visitedNodes = new HashSet<>();
         queue.add(root);
@@ -149,7 +152,7 @@ public class LLAPSearch extends GenericSearch {
             Node currentNode = queue.poll();
 
             if (isGoalState(currentNode)) {
-                return getPathToGoal(currentNode, 0);
+                return getPathToGoal(currentNode, numofNodes);
             }
 
             if (isEndState(currentNode)) {
@@ -159,6 +162,7 @@ public class LLAPSearch extends GenericSearch {
                 continue;
             }
             visitedNodes.add(currentNode);
+            numofNodes++;
 
             List<Node> successors = generateSuccessorNodes(currentNode);
 
@@ -258,7 +262,6 @@ public class LLAPSearch extends GenericSearch {
                 pathString.insert(0, node.action()).insert(0, ",");
             }
             node = node.parent();
-            numOfNodes++;
         }
         pathString.replace(0, 1, "");
         pathString.append(";");

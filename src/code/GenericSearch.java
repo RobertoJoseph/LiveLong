@@ -18,6 +18,7 @@ package code;
         String strategy = "BF";
         boolean visualize = true;
         LLAPSearch llapSearch = new LLAPSearch();
+
         String result = llapSearch.solve(initialState, strategy, visualize);
 
 
