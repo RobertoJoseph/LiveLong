@@ -181,11 +181,12 @@ public class LLAPSearch extends GenericSearch {
         if (strategy == 0) {
             return new PriorityQueue<>(Comparator.comparingInt(Node::pathCost));
         } else if (strategy == 1) {
-            return new PriorityQueue<>(Comparator.comparingInt(heuristic == 1 ? Node::getHeuristicOne : Node::getHeuristicTwo));
+            return new PriorityQueue<>(Comparator.comparingInt(heuristic == 1 ? (node) -> node.getHeuristicOne(problem.variables) : (node)-> node.getHeuristicTwo(problem.variables)));
         } else {
-            return new PriorityQueue<>(Comparator.comparingInt((node) -> node.totalCost(heuristic)));
+            return new PriorityQueue<>(Comparator.comparingInt(heuristic == 1 ? (node) -> node.getHeuristicOne(problem.variables) + node.pathCost() : (node)-> node.getHeuristicTwo(problem.variables) + node.pathCost()));
         }
     }
+
 
     public static List<Node> generateSuccessorNodes(Node node) {
         List<Node> successors = new ArrayList<>();
