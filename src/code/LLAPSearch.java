@@ -30,26 +30,32 @@ public class LLAPSearch extends GenericSearch {
         Node root = new Node(state, null, 0, Action.DEFAULT, 0);
         StringBuilder solution = new StringBuilder();
 
+        if(visualize){
+            System.out.println("Variables: " + problem.variables.toString());
+            System.out.println("Initial State: " + state.toString());
+            System.out.println("Strategy: " + strategy);
+        }
+
         String value = switch (strategy) {
-            case "BF" -> breadthFirstSearch(root, 0);
-            case "DF" -> dfs(root, 0, solution, new HashSet<>());
-            case "ID" -> iterativeDeepeningSearch(root, solution);
-            case "UC" -> searchStrategy(root, 0, 0,0);
-            case "GR1" -> searchStrategy(root, 1, 1,0);
-            case "GR2" -> searchStrategy(root, 1, 2,0);
-            case "AS1" -> searchStrategy(root, 2, 1,0);
-            case "AS2" -> searchStrategy(root, 2, 2,0);
+            case "BF" -> breadthFirstSearch(root, 0, visualize);
+            case "DF" -> dfs(root, 0, solution, new HashSet<>(), visualize);
+            case "ID" -> iterativeDeepeningSearch(root, solution, visualize);
+            case "UC" -> searchStrategy(root, 0, 0,0, visualize);
+            case "GR1" -> searchStrategy(root, 1, 1,0, visualize);
+            case "GR2" -> searchStrategy(root, 1, 2,0, visualize);
+            case "AS1" -> searchStrategy(root, 2, 1,0, visualize);
+            case "AS2" -> searchStrategy(root, 2, 2,0, visualize);
             default -> null;
         };
         return value == null ? "NOSOLUTION" : value;
     }
 
 
-    public static String dfs(Node node, int numOfNodes, StringBuilder pathString, HashSet<Node> visitedNodes) {
+    public static String dfs(Node node, int numOfNodes, StringBuilder pathString, HashSet<Node> visitedNodes, boolean visualise) {
 
 
         if (isGoalState(node)) {
-            return getPathToGoal(node, numOfNodes);
+            return getPathToGoal(node, numOfNodes, visualise);
         }
         if (isEndState(node) || visitedNodes.contains(node)) {
             return null;
@@ -60,7 +66,7 @@ public class LLAPSearch extends GenericSearch {
         List<Node> successors = generateSuccessorNodes(node);
         for (Node successor : successors) {
             pathString.append(successor.action()).append(",");
-            String result = dfs(successor, numOfNodes, pathString, visitedNodes);
+            String result = dfs(successor, numOfNodes, pathString, visitedNodes,visualise);
             if (result != null) {
                 return result;
             }
@@ -71,7 +77,7 @@ public class LLAPSearch extends GenericSearch {
     }
 
 
-    public static String breadthFirstSearch(Node node,int numOfNodes) {
+    public static String breadthFirstSearch(Node node,int numOfNodes, boolean visualise) {
         Queue<Node> queue = new LinkedList<>();
         Set<Node> visitedNodes = new HashSet<>();
         queue.add(node);
@@ -81,7 +87,7 @@ public class LLAPSearch extends GenericSearch {
             numOfNodes++;
             assert currentNode != null;
             if (isGoalState(currentNode)) {
-                return getPathToGoal(currentNode, numOfNodes);
+                return getPathToGoal(currentNode, numOfNodes, visualise);
             }
 
             if (isEndState(currentNode)) {
@@ -104,9 +110,9 @@ public class LLAPSearch extends GenericSearch {
         return null;
     }
 
-    public static String iterativeDeepeningSearch(Node root, StringBuilder solution) {
+    public static String iterativeDeepeningSearch(Node root, StringBuilder solution, boolean visualise) {
         for (int depth = 0; depth < Integer.MAX_VALUE; depth++) {
-            String result = depthLimitedSearch(root, depth, solution, new HashSet<>());
+            String result = depthLimitedSearch(root, depth, solution, new HashSet<>(), visualise);
             if (result != null) {
                 return result;
             }
@@ -115,13 +121,13 @@ public class LLAPSearch extends GenericSearch {
     }
 
 
-    public static String depthLimitedSearch(Node node, int depthLimit, StringBuilder pathString, HashSet<Node> visitedNodes) {
-        return recursiveDLS(node, depthLimit, 0, visitedNodes,0);
+    public static String depthLimitedSearch(Node node, int depthLimit, StringBuilder pathString, HashSet<Node> visitedNodes, boolean visualise) {
+        return recursiveDLS(node, depthLimit, 0, visitedNodes,0, visualise);
     }
 
-    private static String recursiveDLS(Node node, int depthLimit, int currentDepth, HashSet<Node> visitedNodes,int numOfNodes) {
+    private static String recursiveDLS(Node node, int depthLimit, int currentDepth, HashSet<Node> visitedNodes,int numOfNodes, boolean visualise) {
         if (isGoalState(node)) {
-            return getPathToGoal(node, numOfNodes);
+            return getPathToGoal(node, numOfNodes, visualise);
         }
 
         if (currentDepth == depthLimit || isEndState(node) || visitedNodes.contains(node)) {
@@ -133,7 +139,7 @@ public class LLAPSearch extends GenericSearch {
         List<Node> successors = generateSuccessorNodes(node);
 
         for (Node successor : successors) {
-            String result = recursiveDLS(successor, depthLimit, currentDepth + 1, visitedNodes,numOfNodes);
+            String result = recursiveDLS(successor, depthLimit, currentDepth + 1, visitedNodes,numOfNodes, visualise);
             if (result != null) {
                 return result;
             }
@@ -143,7 +149,7 @@ public class LLAPSearch extends GenericSearch {
     }
 
 
-    public static String searchStrategy(Node root, int strategy, int heuristic,int numofNodes) {
+    public static String searchStrategy(Node root, int strategy, int heuristic,int numofNodes, boolean visualise) {
         PriorityQueue<Node> queue = createPriorityQueue(strategy, heuristic);
         Set<Node> visitedNodes = new HashSet<>();
         queue.add(root);
@@ -152,7 +158,7 @@ public class LLAPSearch extends GenericSearch {
             Node currentNode = queue.poll();
 
             if (isGoalState(currentNode)) {
-                return getPathToGoal(currentNode, numofNodes);
+                return getPathToGoal(currentNode, numofNodes, visualise);
             }
 
             if (isEndState(currentNode)) {
@@ -255,12 +261,15 @@ public class LLAPSearch extends GenericSearch {
         return node.canBuild(problem.variables, buildType);
     }
 
-    public static String getPathToGoal(Node node, int numOfNodes) {
+    public static String getPathToGoal(Node node, int numOfNodes, boolean visualise) {
         StringBuilder pathString = new StringBuilder();
         int moneySpent = node.state().moneySpent();
+        Stack<String> stack = new Stack<String>();
         while (node != null) {
             if (node.action() != Action.DEFAULT) {
                 pathString.insert(0, node.action()).insert(0, ",");
+                if(visualise)
+                    stack.push(node.action().toString() + " " + node.state().toString());
             }
             node = node.parent();
         }
@@ -268,6 +277,11 @@ public class LLAPSearch extends GenericSearch {
         pathString.append(";");
         pathString.append(moneySpent).append(";");
         pathString.append(numOfNodes).append(";");
+        if(visualise){
+            while (!stack.isEmpty()) {
+                System.out.println(stack.pop());
+            }
+        }
         return pathString.toString();
 
     }
